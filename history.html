@@ -1,0 +1,6 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detection History | PhishGuard</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><header class="top"><div class="brand">🛡️ PhishGuard</div><nav><a href="/">Scanner</a><a href="/history">Detection History</a></nav></header>
+<main class="wrap"><section class="hero"><div class="eyebrow">RECENT SCANS</div><h1>Detection <span>History</span></h1><p>Last 30 analyses performed in this local prototype.</p></section>
+<section class="panel">{% if rows %}<div class="tablewrap"><table><tr><th>Time</th><th>Type</th><th>Verdict</th><th>Score</th><th>Input (truncated)</th></tr>
+{% for r in rows %}<tr><td>{{r["created_at"]}}</td><td>{{r["input_type"]|upper}}</td><td>{{r["verdict"]}}</td><td>{{r["score"]}}/100</td><td>{{r["content"][:100]}}</td></tr>{% endfor %}</table></div>{% else %}<p>No scans yet. <a href="/">Analyze your first message.</a></p>{% endif %}</section></main></body></html>

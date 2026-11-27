@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhishGuard | SMS & URL Detection</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="top"><div class="brand">🛡️ PhishGuard</div><nav><a href="/">Scanner</a><a href="/history">Detection History</a></nav></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">CYBERSECURITY • AWARENESS • PROTECTION</div>
+<h1>Detect phishing before <span>you click.</span></h1>
+<p>Analyze suspicious SMS messages and URLs with a simple, explainable detection engine.</p></section>
+<section class="panel">
+<div class="tabs"><button class="tab active" data-type="sms">SMS Analyzer</button><button class="tab" data-type="url">URL Analyzer</button></div>
+<label id="inputLabel" for="content">Paste the SMS message</label>
+<textarea id="content" placeholder="Example: Your account will be blocked. Verify now at http://example.test"></textarea>
+<div class="actions"><button id="scan">Analyze now →</button><button class="secondary" id="clear">Clear</button></div>
+<div id="error" class="error hidden"></div>
+<div id="result" class="result hidden"></div>
+</section>
+<section class="note"><strong>Academic prototype:</strong> This version uses transparent heuristic/rule-based checks, not a trained AI model or a live threat-intelligence database. “Likely Safe” does not guarantee a message or URL is safe. Never enter real passwords, OTPs, or private information.</section>
+</main>
+<script>
+let currentType = "sms";
+const tabs = document.querySelectorAll(".tab");
+tabs.forEach(btn => btn.addEventListener("click", () => {
+  tabs.forEach(x => x.classList.remove("active")); btn.classList.add("active");
+  currentType = btn.dataset.type;
+  document.getElementById("inputLabel").textContent = currentType === "sms" ? "Paste the SMS message" : "Enter a URL";
+  document.getElementById("content").placeholder = currentType === "sms" ?
+    "Example: Your account will be blocked. Verify now at http://example.test" : "https://example.com";
+  document.getElementById("result").classList.add("hidden");
+}));
+document.getElementById("clear").onclick = () => {
+  document.getElementById("content").value = "";
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("error").classList.add("hidden");
+};
+document.getElementById("scan").onclick = async () => {
+  const content = document.getElementById("content").value.trim();
+  const error = document.getElementById("error"), resultBox = document.getElementById("result");
+  error.classList.add("hidden"); resultBox.classList.add("hidden");
+  if (!content) { error.textContent = "Please enter text to analyze."; error.classList.remove("hidden"); return; }
+  const button = document.getElementById("scan"); button.disabled = true; button.textContent = "Analyzing…";
+  try {
+    const response = await fetch("/analyze", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({type:currentType, content})});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Analysis failed.");
+    const cls = data.verdict === "Phishing" ? "danger" : data.verdict === "Suspicious" ? "warning" : "safe";
+    let html = `<div class="verdict ${cls}"><div><small>DETECTION RESULT</small><h2>${data.verdict}</h2></div><div class="score">${data.score}/100<small>risk score</small></div></div>`;
+    html += `<h3>Why was it classified this way?</h3><ul>${data.reasons.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+    if (data.urls && data.urls.length) {
+      html += "<h3>Extracted URL analysis</h3>";
+      data.urls.forEach(u => { html += `<div class="urlitem"><b>${escapeHtml(u.url)}</b><span>${escapeHtml(u.verdict)} · ${u.score}/100</span><ul>${u.reasons.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul></div>`; });
+    }
+    resultBox.innerHTML = html; resultBox.classList.remove("hidden");
+  } catch(e) { error.textContent = e.message; error.classList.remove("hidden"); }
+  finally { button.disabled = false; button.textContent = "Analyze now →"; }
+};
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+</script>
+</body></html>
