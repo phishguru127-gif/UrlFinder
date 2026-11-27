@@ -1,6 +1,125 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Detection History | PhishGuard</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
-<body><header class="top"><div class="brand">🛡️ PhishGuard</div><nav><a href="/">Scanner</a><a href="/history">Detection History</a></nav></header>
-<main class="wrap"><section class="hero"><div class="eyebrow">RECENT SCANS</div><h1>Detection <span>History</span></h1><p>Last 30 analyses performed in this local prototype.</p></section>
-<section class="panel">{% if rows %}<div class="tablewrap"><table><tr><th>Time</th><th>Type</th><th>Verdict</th><th>Score</th><th>Input (truncated)</th></tr>
-{% for r in rows %}<tr><td>{{r["created_at"]}}</td><td>{{r["input_type"]|upper}}</td><td>{{r["verdict"]}}</td><td>{{r["score"]}}/100</td><td>{{r["content"][:100]}}</td></tr>{% endfor %}</table></div>{% else %}<p>No scans yet. <a href="/">Analyze your first message.</a></p>{% endif %}</section></main></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhishGuard | Threat History</title>
+<link rel="stylesheet"
+href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header class="top">
+  <div class="brand">🛡️ PhishGuard</div>
+  <nav>
+    <a href="/">Scanner</a>
+    <a href="/history">Detection History</a>
+  </nav>
+</header>
+
+<main class="wrap">
+
+<section class="hero">
+  <div class="eyebrow">CYBER INTELLIGENCE • SCAN LOGS</div>
+
+  <h1>Threat <span>History</span></h1>
+
+  <p>
+    Review your recent URL and SMS security analysis.
+    Monitor previous detection results.
+  </p>
+</section>
+
+<section class="panel">
+
+  <div style="display:flex;justify-content:space-between;
+  align-items:center;gap:15px;margin-bottom:24px;flex-wrap:wrap">
+
+    <div>
+      <h2 style="font-size:19px">Recent Security Scans</h2>
+      <p style="color:#8495ad;font-size:12px;margin-top:8px">
+        Your latest 30 analysis records
+      </p>
+    </div>
+
+    <a href="/" style="
+    background:linear-gradient(100deg,#43e6d1,#75b7ff);
+    color:#06191c;padding:12px 17px;
+    border-radius:9px;font-size:12px;font-weight:800">
+      + NEW SCAN
+    </a>
+
+  </div>
+
+  {% if rows %}
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>DATE & TIME</th>
+          <th>SCAN TYPE</th>
+          <th>VERDICT</th>
+          <th>RISK SCORE</th>
+          <th>INPUT</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r["created_at"] }}</td>
+
+          <td>{{ r["input_type"]|upper }}</td>
+
+          <td>
+            {% if r["verdict"] == "Phishing" %}
+              <span style="color:#ff5576;font-weight:700">
+                ● {{ r["verdict"] }}
+              </span>
+            {% elif r["verdict"] == "Suspicious" %}
+              <span style="color:#ffc56b;font-weight:700">
+                ● {{ r["verdict"] }}
+              </span>
+            {% else %}
+              <span style="color:#43e6d1;font-weight:700">
+                ● {{ r["verdict"] }}
+              </span>
+            {% endif %}
+          </td>
+
+          <td>{{ r["score"] }}/100</td>
+
+          <td>{{ r["content"][:100] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+
+  <div style="text-align:center;padding:55px 10px">
+    <div style="font-size:40px;margin-bottom:15px">⌁</div>
+    <h3>No Scan Records Found</h3>
+    <p style="color:#8495ad;margin:12px 0 20px;font-size:13px">
+      Your security scan history will appear here.
+    </p>
+    <a href="/" style="color:#43e6d1;font-size:13px">
+      Start your first scan →
+    </a>
+  </div>
+
+  {% endif %}
+
+</section>
+
+</main>
+
+<footer>
+  PHISHGUARD • SECURITY MONITORING SYSTEM
+</footer>
+
+</body>
+</html>
